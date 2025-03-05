@@ -22,16 +22,28 @@ def ItemFormatting(item):
 
 def DatabaseLookup(ndc_number):
     for item in dataset['results']:
-        if item.get('product_ndc') == ndc_number:
+        npc_code = item.get('product_ndc').replace("-","")
+        if npc_code == ndc_number:
             print('Found Item')
             return item
+
+def UpcToNdc(upc_input):
+    #If UPC is 11 digits, leave alone. If 12, format the data
+    if len(upc_input) == 12:       
+        upc_input = upc_input[1:-1]   
+    elif len(upc_input) != 11:
+        raise ValueError("Invalid UPC format. Must be 11 or 12 digits.")
+    ndc_input = upc_input[:-2]
+    package_code = upc_input[-2:]
+    return ndc_input, package_code
 
 os.system('clear')
 user_input = ''
 while user_input != 'quit':
     user_input = input('Product NDC or \'quit\' to exit: ')
     if user_input != 'quit':
-        search_item = DatabaseLookup(user_input)
+        ndc_input, package_code = UpcToNdc(user_input)
+        search_item = DatabaseLookup(ndc_input)
         if search_item is not None:
             results, ingredients = ItemFormatting(search_item)
             print('Generic/Labeler/Brand Names:')
