@@ -23,7 +23,7 @@ def ItemFormatting(item):
 def DatabaseLookup(ndc_number):
     for item in dataset['results']:
         npc_code = item.get('product_ndc').replace("-","")
-        if npc_code == ndc_number:
+        if npc_code in ndc_number:
             print('Found Item')
             return item
 
@@ -35,14 +35,14 @@ def UpcToNdc(upc_input):
         raise ValueError("Invalid UPC format. Must be 11 or 12 digits.")
     ndc_input = upc_input[:-2]
     package_code = upc_input[-2:]
-    return ndc_input, package_code
+    return ndc_input + package_code
 
 os.system('clear')
 user_input = ''
 while user_input != 'quit':
     user_input = input('Product NDC or \'quit\' to exit: ')
     if user_input != 'quit':
-        ndc_input, package_code = UpcToNdc(user_input)
+        ndc_input = UpcToNdc(user_input)
         search_item = DatabaseLookup(ndc_input)
         if search_item is not None:
             results, ingredients = ItemFormatting(search_item)
@@ -55,3 +55,13 @@ while user_input != 'quit':
         else:
             print("No item found")
     print('End of Operation')
+
+    #test codes
+    # Lisinopril 5mg - 
+    # 3 6818051301 8
+    # 6810-513-01  (9 digits)
+    # Hydrocortizone 2.5% - 
+    # 3 51672230032 6 
+    # 51672-3003-2 (10 digits)
+
+    
