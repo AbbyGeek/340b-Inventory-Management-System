@@ -4,8 +4,6 @@ import os
 loadfile = open('drug-ndc-0001-of-0001.json')
 dataset = json.load(loadfile)
 
-
-
 def ItemFormatting(item):
     generic_name = item.get('generic_name')
     labeler_name = item.get('labeler_name')
@@ -28,7 +26,7 @@ def DatabaseLookup(ndc_number):
     for item in dataset['results']:
         npc_code = item.get('product_ndc').replace("-","")
         if npc_code in ndc_number:
-            print('Found Item...')
+            print('Found Item')
             return item
 
 def UpcToNdc(upc_input):
@@ -56,14 +54,11 @@ while user_input != 'quit':
         search_item = DatabaseLookup(ndc_input)
         if search_item is not None:
             results, ingredients, packages = ItemFormatting(search_item)
+            package = PackageLookup(packages)
             print("Generic Name: " + results[0])
             print("Manufacturer: " + results[1])
             print("Brand Name: " + results[2])
-            package = PackageLookup(packages)
             print("Package Info: " + package)
-            # print('Generic/Labeler/Brand Names:')
-            # for item in results:
-            #     print(item)
             print("Active Ingredients:")
             for ingredient in ingredients:
                 ingredient_name = ingredient[0].pop()
