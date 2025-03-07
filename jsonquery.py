@@ -28,7 +28,7 @@ def DatabaseLookup(ndc_number):
     for item in dataset['results']:
         npc_code = item.get('product_ndc').replace("-","")
         if npc_code in ndc_number:
-            print('Found Item')
+            print('Found Item...')
             return item
 
 def UpcToNdc(upc_input):
@@ -41,6 +41,12 @@ def UpcToNdc(upc_input):
     package_code = upc_input[-2:]
     return ndc_input + package_code
 
+def PackageLookup(packages):
+    for package in packages:
+        package_ndc = package[0].pop()
+        if ndc_input == package_ndc.replace("-",""):
+            return package[1].pop()
+
 os.system('clear')
 user_input = ''
 while user_input != 'quit':
@@ -50,15 +56,19 @@ while user_input != 'quit':
         search_item = DatabaseLookup(ndc_input)
         if search_item is not None:
             results, ingredients, packages = ItemFormatting(search_item)
+            print("Generic Name: " + results[0])
+            print("Manufacturer: " + results[1])
+            print("Brand Name: " + results[2])
+            package = PackageLookup(packages)
+            print("Package Info: " + package)
             # print('Generic/Labeler/Brand Names:')
             # for item in results:
             #     print(item)
             print("Active Ingredients:")
-            for item in ingredients:
-                print(item)
-            print("Package Info:")
-            for package in packages:
-                print(package)
+            for ingredient in ingredients:
+                ingredient_name = ingredient[0].pop()
+                ingredient_dosage = ingredient[1].pop()
+                print(ingredient_name + ": " + ingredient_dosage)
         else:
             print("No item found")
     print('End of Operation')
