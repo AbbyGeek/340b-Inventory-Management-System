@@ -4,7 +4,7 @@ import os
 loadfile = open('drug-ndc-0001-of-0001.json')
 dataset = json.load(loadfile)
 
-def ItemFormatting(item):
+def MedFormatting(item):
     generic_name = item.get('generic_name')
     labeler_name = item.get('labeler_name')
     brand_name = item.get('brand_name')
@@ -16,11 +16,9 @@ def ItemFormatting(item):
     for package in item.get('packaging'):
         package_set = {package['package_ndc']},{package['description']},{package['marketing_start_date']},{package['sample']}
         package_list.append(package_set)
-    formatted_product = []
-    formatted_product.append(generic_name)
-    formatted_product.append(labeler_name)
-    formatted_product.append(brand_name)
-    return formatted_product, ingredient_list, package_list
+    pakcage_info = PackageLookup(package_list)
+    med_dict = dict(generic_name = generic_name, manufacturer = labeler_name, brand_name = brand_name, package_info = pakcage_info, ingredients = ingredient_list)
+    return med_dict
 
 def DatabaseLookup(ndc_number):
     for item in dataset['results']:
@@ -44,6 +42,7 @@ def PackageLookup(packages):
         package_ndc = package[0].pop()
         if ndc_input == package_ndc.replace("-",""):
             return package[1].pop()
+        
 
 os.system('clear')
 user_input = ''
@@ -53,9 +52,7 @@ while user_input != 'quit':
         ndc_input = UpcToNdc(user_input)
         search_item = DatabaseLookup(ndc_input)
         if search_item is not None:
-            results, ingredients, packages = ItemFormatting(search_item)
-            package = PackageLookup(packages)
-            med_dict = dict(generic_name = results[0], manufacturer =results[1], brand_name = results[2], package_info = package, ingredients = ingredients)
+            med_dict = MedFormatting(search_item)
             print("Generic Name: " + med_dict['generic_name'])
             print("Manufacturer: " + med_dict['manufacturer'])
             print("Brand Name: " + med_dict['brand_name'])
