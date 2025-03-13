@@ -72,8 +72,11 @@ while user_input != 'quit':
     # Lisinopril 5mg - 
     # 368180513018
     # 6810-513-01  (9 digits)
+    #returns Generic name, Manufacturer, brand name, package info (100 tablet in 1 bottle), active ingredients
+
     # Hydrocortizone 2.5% - 
     # 351672300326
     # 51672-3003-2 (10 digits)
+    #returns: Generic name, manufacturer, brand name, package info (1 tube in 1 carton, 28.35g/tube), active ingredients
 
     
