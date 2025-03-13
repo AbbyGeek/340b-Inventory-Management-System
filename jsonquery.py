@@ -55,12 +55,13 @@ while user_input != 'quit':
         if search_item is not None:
             results, ingredients, packages = ItemFormatting(search_item)
             package = PackageLookup(packages)
-            print("Generic Name: " + results[0])
-            print("Manufacturer: " + results[1])
-            print("Brand Name: " + results[2])
-            print("Package Info: " + package)
+            med_dict = dict(generic_name = results[0], manufacturer =results[1], brand_name = results[2], package_info = package, ingredients = ingredients)
+            print("Generic Name: " + med_dict['generic_name'])
+            print("Manufacturer: " + med_dict['manufacturer'])
+            print("Brand Name: " + med_dict['brand_name'])
+            print("Package Info: " + med_dict['package_info'])
             print("Active Ingredients:")
-            for ingredient in ingredients:
+            for ingredient in med_dict['ingredients']:
                 ingredient_name = ingredient[0].pop()
                 ingredient_dosage = ingredient[1].pop()
                 print(ingredient_name + ": " + ingredient_dosage)
