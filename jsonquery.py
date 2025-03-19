@@ -1,24 +1,36 @@
 import json
-import os
 
 loadfile = open('drug-ndc-0001-of-0001.json')
 dataset = json.load(loadfile)
 
-
-
-def ItemFormatting(item):
+def MedFormatting(item, ndc_input):
     generic_name = item.get('generic_name')
-    labeler_name = item.get('labeler_name')
     brand_name = item.get('brand_name')
-    ingredient_list = []
-    for ingredient in item.get('active_ingredients'):
-        ingredient_set = {ingredient['name']},{ingredient['strength']}
-        ingredient_list.append(ingredient_set)
-    formatted_product = []
-    formatted_product.append(generic_name)
-    formatted_product.append(labeler_name)
-    formatted_product.append(brand_name)
-    return formatted_product, ingredient_list
+    manufacturer = item.get('labeler_name')
+    package_list = []
+    for package in item.get('packaging'):
+         package_set = {package['package_ndc']},{package['description']},{package['marketing_start_date']},{package['sample']}
+         package_list.append(package_set)
+    package_info = PackageLookup(package_list, ndc_input)
+    dosage_form = item.get('dosage_form')
+    route_list = ""
+    for route in item.get('route'):
+        route_list += route
+    pharm_class_list = ""
+    for pharm_class in item.get('pharm_class'):
+        pharm_class_list += pharm_class
+    med_dict = dict(
+        ndc_code = ndc_input, 
+        generic_name = generic_name, 
+        brand_name = brand_name, 
+        manufacturer = manufacturer,
+        package_info = package_info, 
+        dosage_form = dosage_form, 
+        route = route_list,
+        pharm_class = pharm_class_list,
+        quantity = 1         
+    )
+    return med_dict
 
 def DatabaseLookup(ndc_number):
     for item in dataset['results']:
@@ -31,37 +43,14 @@ def UpcToNdc(upc_input):
     #If UPC is 11 digits, leave alone. If 12, format the data
     if len(upc_input) == 12:       
         upc_input = upc_input[1:-1]   
-    elif len(upc_input) != 11:
-        raise ValueError("Invalid UPC format. Must be 11 or 12 digits.")
+    # elif len(upc_input) != 11:
+    #     raise ValueError("Invalid UPC format. Must be 11 or 12 digits.")
     ndc_input = upc_input[:-2]
     package_code = upc_input[-2:]
     return ndc_input + package_code
 
-os.system('clear')
-user_input = ''
-while user_input != 'quit':
-    user_input = input('Product NDC or \'quit\' to exit: ')
-    if user_input != 'quit':
-        ndc_input = UpcToNdc(user_input)
-        search_item = DatabaseLookup(ndc_input)
-        if search_item is not None:
-            results, ingredients = ItemFormatting(search_item)
-            print('Generic/Labeler/Brand Names:')
-            for item in results:
-                print(item)
-            print("Active Ingredients:")
-            for item in ingredients:
-                print(item)
-        else:
-            print("No item found")
-    print('End of Operation')
-
-    #test codes
-    # Lisinopril 5mg - 
-    # 3 6818051301 8
-    # 6810-513-01  (9 digits)
-    # Hydrocortizone 2.5% - 
-    # 3 51672230032 6 
-    # 51672-3003-2 (10 digits)
-
-    
+def PackageLookup(packages, ndc_input):
+    for package in packages:
+        package_ndc = package[0].pop()
+        if ndc_input == package_ndc.replace("-",""):
+            return package[1].pop()
