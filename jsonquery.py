@@ -2,10 +2,7 @@ import json
 
 loadfile = open('drug-ndc-0001-of-0001.json')
 dataset = json.load(loadfile)
-"""
-PROBLEMS:
--Quantity not updating past 1
-"""
+
 def MedFormatting(item, ndc_input):
     generic_name = item.get('generic_name')
     brand_name = item.get('brand_name')

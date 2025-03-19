@@ -1,6 +1,5 @@
 import tkinter as tk
 from tkinter import ttk
-import sqlite3
 from inventorydb import AddMed, OpenDb, CloseDb
 from jsonquery import UpcToNdc, DatabaseLookup, MedFormatting
 
@@ -8,7 +7,7 @@ def fetch_data():
     cursor = OpenDb()
     cursor.execute("SELECT ndc_code, generic_name, brand_name, manufacturer, package_info, dosage_form, route, pharm_class, quantity FROM medications")
     rows = cursor.fetchall()
-    CloseDb()
+    # CloseDb()
     return rows
 
 def UpdateTable(table):
@@ -58,6 +57,7 @@ def GUISetup():
     upc_entry.pack(side=tk.LEFT, padx=5)
 
     submit_button = tk.Button(input_frame, text="Add Medication", command=lambda: process_upc(upc_entry, table))
+    upc_entry.bind("<Return>", lambda event: process_upc(upc_entry, table))
     submit_button.pack(side=tk.LEFT)
 
     #Initial load
