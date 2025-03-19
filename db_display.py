@@ -23,13 +23,21 @@ def process_upc(entry, table):
     upc_code = entry.get().strip()
     if not upc_code:
         return #Ignore empty inputs
-    ndc_code = UpcToNdc(upc_code)
-    search_item = DatabaseLookup(ndc_code)
-    if search_item:
-        med_dict = MedFormatting(search_item, ndc_code)
-        AddMed(med_dict) #Add med to database
-        UpdateTable(table) #Refresh Table
-        entry.delete(0, tk.END) #Clear input field
+    try:
+        ndc_code = UpcToNdc(upc_code)
+        if not ndc_code:
+            print("Invalid UPC Code or not found.")
+            return
+        search_item = DatabaseLookup(ndc_code)
+        if search_item:
+            med_dict = MedFormatting(search_item, ndc_code)
+            AddMed(med_dict) #Add med to database
+            UpdateTable(table) #Refresh Table
+            entry.delete(0, tk.END) #Clear input field
+        else:
+            print("No medication found for this UPC.")
+    except Exception as e:
+        print(f"Error processing UPC: {e}")
 
 # GUI setup
 def GUISetup():
