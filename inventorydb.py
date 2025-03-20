@@ -75,7 +75,6 @@ def OpenDb():
     global conn
     if conn is None:
         conn = sqlite3.connect("inventory.db")
-        print("DB connection open")
     return conn.cursor()
 
 def CloseDb():
@@ -84,4 +83,3 @@ def CloseDb():
         conn.commit()
         conn.close()
         conn = None
-        print("DB connection closed")
