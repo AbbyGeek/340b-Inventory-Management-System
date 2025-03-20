@@ -48,9 +48,14 @@ def GUISetup():
     """Set up the GUI for inventory display and UPC input"""
     root = tk.Tk()
     root.title("Inventory Viewer")
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+    root.geometry(f"{screen_width}x{screen_height}+0+0")
 
+    
     frame = tk.Frame(root)
     frame.pack(pady=20)
+    
 
     cols = ["NDC Code", "Generic Name", "Brand Name", "Manufacturer", "Package Info", "Dosage Form", "Route", "Pharmacy Class", "Quantity"]
     table = ttk.Treeview(frame, columns=tuple(range(len(cols))), show="headings")
@@ -62,25 +67,15 @@ def GUISetup():
 
     #UPC input field
     input_frame = tk.Frame(root)
-    input_frame.pack(pady=10)
+    input_frame.pack(side='bottom', pady=10)
 
     tk.Label(input_frame, text="Enter UPC Code:").pack(side=tk.LEFT)
     upc_entry = tk.Entry(input_frame)
     upc_entry.pack(side=tk.LEFT, padx=5)
 
-    #Add/remove toggle
-    # toggle_frame = tk.Frame(root)
-    # toggle_frame.pack(pady=10)
-    # mode_var = tk.StringVar(value="add") #default mode is 'Add'
-    # add_button = tk.Radiobutton(toggle_frame, text="Add", variable=mode_var, value="add")
-    # remove_button = tk.Radiobutton(toggle_frame, text="Remove", variable=mode_var, value="remove")
-    # add_button.pack(side=tk.LEFT)
-    # remove_button.pack(side=tk.LEFT)
-
-    #CHANGED INITIAL VALUE TO BLANK STRING TO ENSURE CLICKING ON RADIO BUTTON UPDATES mode_var VALUE. IT DOES NOT UPDATE
     mode_var = tk.StringVar(root, "add") #default to "Add"
     toggle_frame = tk.Frame(root)
-    toggle_frame.pack(pady=10)
+    toggle_frame.pack(side = 'bottom', pady=10)
 
     add_button = tk.Radiobutton(toggle_frame, text="Add", variable=mode_var, value="add")
     remove_button = tk.Radiobutton(toggle_frame, text="Remove", variable=mode_var, value="remove")
