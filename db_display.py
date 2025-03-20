@@ -51,18 +51,17 @@ def GUISetup():
     screen_width = root.winfo_screenwidth()
     screen_height = root.winfo_screenheight()
     root.geometry(f"{screen_width}x{screen_height}+0+0")
-
     
     frame = tk.Frame(root)
-    frame.pack(pady=20)
-    
+    frame.pack(pady=20, fill="both", expand=True)
 
     cols = ["NDC Code", "Generic Name", "Brand Name", "Manufacturer", "Package Info", "Dosage Form", "Route", "Pharmacy Class", "Quantity"]
     table = ttk.Treeview(frame, columns=tuple(range(len(cols))), show="headings")
 
+    col_width = screen_width // len(cols)
     for i, col in enumerate(cols):
         table.heading(i, text=col)
-        table.column(i, anchor="center", stretch=True)
+        table.column(i, width=col_width, anchor="center", stretch=True)
     table.pack()
 
     #UPC input field
