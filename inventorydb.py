@@ -1,6 +1,6 @@
 import sqlite3
 import tkinter as tk
-from tkinter import simpledialog
+from tkinter import messagebox
 conn = None
 
 
@@ -30,6 +30,22 @@ def AddMed(med_dict):
               med_dict["pharm_class"],
               med_dict["quantity"]
             ))
+    CloseDb()
+
+def RemoveMed(med_dict):
+    """Reduce medication quantity or remove it if quantity reaches zero"""
+    cursor = OpenDb()
+    cursor.execute("SELECT quantity FROM medications WHERE ndc_code=?", (med_dict["ndc_code"],))
+    result = cursor.fetchone()
+    if result and result[0] > 0:
+        new_qty = max(result[0] - med_dict["quantity"], 0)
+        if new_qty == 0:
+            cursor.execute("DELETE FROM medications WHERE ndc_code = ?", (med_dict["ndc_code"],))  # Optional: Remove from DB when qty hits 0
+        else:
+            cursor.execute("UPDATE medications SET quantity = ? WHERE ndc_code = ?", (new_qty, med_dict["ndc_code"]))
+    else: #alert when trying to remove item that is not already in table
+        messagebox.showwarning("Item Not Found", "This medication is not in your inventory or has a zero quantity value")
+
     CloseDb()
 
 #Simple Tkinter button to trigger scan
