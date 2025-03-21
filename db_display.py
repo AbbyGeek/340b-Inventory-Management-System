@@ -1,10 +1,10 @@
 import tkinter as tk
-from tkinter import ttk, StringVar
+from tkinter import ttk, messagebox
 from tkinter import *
 from inventorydb import AddMed, OpenDb, RemoveMed, CloseDb
 from jsonquery import UpcToNdc, DatabaseLookup, MedFormatting
 
-def fetch_data():
+def FetchData():
     cursor = OpenDb()
     cursor.execute("SELECT ndc_code, generic_name, brand_name, manufacturer, package_info, dosage_form, route, pharm_class, quantity FROM medications")
     rows = cursor.fetchall()
@@ -15,7 +15,7 @@ def UpdateTable(table):
     """Update inventory table with fresh data from database"""
     for row in table.get_children():
         table.delete(row)
-    rows = fetch_data()
+    rows = FetchData()
     for row in rows:
         quantity = row[8]
         tag = "low_stock" if quantity < 4 else ""
@@ -30,7 +30,9 @@ def process_upc(entry, table, mode):
     try:
         ndc_code = UpcToNdc(upc_code)
         if not ndc_code:
-            print("Invalid UPC Code or not found.")
+            messagebox.showwarning("UPC Not Found", "Invalid UPC Code or not found")
+            entry.delete(0, tk.END) #Clear input field
+
             return
         search_item = DatabaseLookup(ndc_code)
         if search_item:
@@ -42,9 +44,12 @@ def process_upc(entry, table, mode):
             UpdateTable(table) #Refresh Table
             entry.delete(0, tk.END) #Clear input field
         else:
-            print("No medication found for this UPC.")
+            messagebox.showwarning("Medication Not Found", "No medication found for this UPC")
+            entry.delete(0, tk.END) #Clear input field
+
     except Exception as e:
-        print(f"Error processing UPC: {e}")
+        messagebox.showerror("Error", f"Failed to process UPC: {e}")
+        entry.delete(0, tk.END) #Clear input field
 
 # GUI setup
 def GUISetup():
