@@ -30,6 +30,7 @@ def AddMed(med_dict):
               med_dict["pharm_class"],
               med_dict["quantity"]
             ))
+    conn.commit()
     CloseDb()
 
 def RemoveMed(med_dict):
@@ -45,7 +46,7 @@ def RemoveMed(med_dict):
             cursor.execute("UPDATE medications SET quantity = ? WHERE ndc_code = ?", (new_qty, med_dict["ndc_code"]))
     else: #alert when trying to remove item that is not already in table
         messagebox.showwarning("Item Not Found", "This medication is not in your inventory or has a zero quantity value")
-
+    conn.commit()
     CloseDb()
 
 #Simple Tkinter button to trigger scan
