@@ -17,7 +17,10 @@ def UpdateTable(table):
         table.delete(row)
     rows = fetch_data()
     for row in rows:
-        table.insert("","end",values=row)
+        quantity = row[8]
+        tag = "low_stock" if quantity < 4 else ""
+        table.insert("", "end", values = row, tags=(tag,))
+    table.tag_configure("low_stock", background="red", foreground="white")
 
 def process_upc(entry, table, mode):
     """Process the UPC input, look up medication, add it to the database"""
@@ -68,7 +71,7 @@ def GUISetup():
     input_frame = tk.Frame(root)
     input_frame.pack(side='bottom', pady=10)
 
-    tk.Label(input_frame, text="Enter UPC Code:").pack(side=tk.LEFT)
+    tk.Label(input_frame, text="UPC Code:").pack(side=tk.LEFT)
     upc_entry = tk.Entry(input_frame)
     upc_entry.pack(side=tk.LEFT, padx=5)
 
@@ -85,10 +88,10 @@ def GUISetup():
     def on_entry_change(event):
         root.after(100, lambda: process_upc(upc_entry, table, mode_var.get()))
         
-    submit_button = tk.Button(input_frame, text="Add Medication", command=lambda: process_upc(upc_entry, table, mode_var.get()))
+    # submit_button = tk.Button(input_frame, text="Add Medication", command=lambda: process_upc(upc_entry, table, mode_var.get()))
     upc_entry.bind("<Return>", lambda event: process_upc(upc_entry, table, mode_var.get()))
     upc_entry.bind("<KeyRelease>", on_entry_change)
-    submit_button.pack(side=tk.LEFT)
+    # submit_button.pack(side=tk.LEFT)
     upc_entry.focus_set()
 
     #Initial load
