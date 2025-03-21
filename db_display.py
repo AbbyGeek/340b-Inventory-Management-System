@@ -3,36 +3,57 @@ from tkinter import ttk, messagebox
 from tkinter import *
 from inventorydb import AddMed, OpenDb, RemoveMed, CloseDb
 from jsonquery import UpcToNdc, DatabaseLookup, MedFormatting
+import concurrent.futures
 
-def FetchData():
-    cursor = OpenDb()
-    cursor.execute("SELECT ndc_code, generic_name, brand_name, manufacturer, package_info, dosage_form, route, pharm_class, quantity FROM medications")
-    rows = cursor.fetchall()
-    # CloseDb()
-    return rows
+executor = concurrent.futures.ThreadPoolExecutor(max_workers=3) #Background worker thread
+update_in_progress = False #global flag
+
+def FetchDataAsync(callback):
+    """Fetch data in a background thread to prevent UI freezing"""
+    def db_task():
+        import sqlite3
+        conn = sqlite3.connect("inventory.db") #new connection to DB
+        cursor = conn.cursor()
+        cursor.execute("SELECT ndc_code, generic_name, brand_name, manufacturer, package_info, dosage_form, route, pharm_class, quantity FROM medications")
+        rows = cursor.fetchall()
+        conn.close() #close after fetching
+        return rows
+    future = executor.submit(db_task)
+    future.add_done_callback(lambda fut: callback(fut.result()))
 
 def UpdateTable(table):
     """Update inventory table with fresh data from database"""
-    rows = FetchData()
-    existing_items = {table.item(child)["values"][0]: child for child in table.get_children()} # get existing rows by NDC code
-    for row in rows:
-        ndc_code = row[0]
-        quantity = row[8]
-        tag = "low_stock" if quantity < 4 else ""
-        if ndc_code in existing_items:
-            #update row if exists
-            item_id=existing_items[ndc_code]
-            table.item(item_id,values=row, tags=(tag,))
-            del existing_items[ndc_code] #Remove from existing_items to track processed rows
-        else:
-            table.insert("","end", values=row, tags=(tag,))
-    #remove any rows that no longer exist in DB
-    for item_id in existing_items.values():
-        table.delete(item_id)
-    #configure tag colors
-    table.tag_configure("low_stock",background="red", foreground="white")
+    global update_in_progress
+    if update_in_progress:
+        return #skip update if another is in progress
+    update_in_progress = True
+    def UpdateUI(rows):
+        global update_in_progress
+        existing_items = {table.item(child)["values"][0]: child for child in table.get_children()} # get existing rows by NDC code
+        for row in rows:
+            ndc_code = row[0]
+            quantity = row[8]
+            tag = "low_stock" if quantity < 4 else ""
+            if ndc_code in existing_items:
+                    #update row if exists
+                    item_id=existing_items[ndc_code]
+                    table.item(item_id,values=row, tags=(tag,))
+                    del existing_items[ndc_code] #Remove from existing_items to track processed rows
+            else:
+                table.insert("","end", values=row, tags=(tag,))
+        #remove any rows that no longer exist in DB
+        for item_id in existing_items.values():
+            try:
+                table.delete(item_id)
+            except tk.TclError:
+                pass #ignore if the item is already gone
+        #configure tag colors
+        table.tag_configure("low_stock",background="red", foreground="white")
+        update_in_progress = False #unlock update
+        
     #Schedule next update in 2 seconds to keep UI responsive
-    table.after(2000, lambda: UpdateTable(table))
+    FetchDataAsync(UpdateUI) #async fetch with callback
+    table.after(2000, lambda: UpdateTable(table)) #refresh every 2 seconds
 
 def process_upc(entry, table, mode):
     """Process the UPC input, look up medication, add it to the database"""

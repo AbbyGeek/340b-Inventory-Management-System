@@ -6,7 +6,8 @@ conn = None
 
 def AddMed(med_dict):
     """Insert medication data into the database, or update quantity if already exists."""
-    cursor = OpenDb()
+    conn = sqlite3.connect("inventory.db") #new connection
+    cursor = conn.cursor()
     #Check if med is already in db
     cursor.execute("SELECT quantity FROM medications WHERE ndc_code=?", (med_dict["ndc_code"],))
     result = cursor.fetchone()
@@ -35,7 +36,8 @@ def AddMed(med_dict):
 
 def RemoveMed(med_dict):
     """Reduce medication quantity or remove it if quantity reaches zero"""
-    cursor = OpenDb()
+    conn = sqlite3.connect("inventory.db") #new connection
+    cursor = conn.cursor()
     cursor.execute("SELECT quantity FROM medications WHERE ndc_code=?", (med_dict["ndc_code"],))
     result = cursor.fetchone()
     if result and result[0] > 0:
