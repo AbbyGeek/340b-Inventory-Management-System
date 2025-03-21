@@ -13,14 +13,26 @@ def FetchData():
 
 def UpdateTable(table):
     """Update inventory table with fresh data from database"""
-    for row in table.get_children():
-        table.delete(row)
     rows = FetchData()
+    existing_items = {table.item(child)["values"][0]: child for child in table.get_children()} # get existing rows by NDC code
     for row in rows:
+        ndc_code = row[0]
         quantity = row[8]
         tag = "low_stock" if quantity < 4 else ""
-        table.insert("", "end", values = row, tags=(tag,))
-    table.tag_configure("low_stock", background="red", foreground="white")
+        if ndc_code in existing_items:
+            #update row if exists
+            item_id=existing_items[ndc_code]
+            table.item(item_id,values=row, tags=(tag,))
+            del existing_items[ndc_code] #Remove from existing_items to track processed rows
+        else:
+            table.insert("","end", values=row, tags=(tag,))
+    #remove any rows that no longer exist in DB
+    for item_id in existing_items.values():
+        table.delete(item_id)
+    #configure tag colors
+    table.tag_configure("low_stock",background="red", foreground="white")
+    #Schedule next update in 2 seconds to keep UI responsive
+    table.after(2000, lambda: UpdateTable(table))
 
 def process_upc(entry, table, mode):
     """Process the UPC input, look up medication, add it to the database"""
