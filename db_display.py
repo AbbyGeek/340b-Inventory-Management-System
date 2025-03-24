@@ -50,7 +50,7 @@ def UpdateTable(table):
         #configure tag colors
         table.tag_configure("low_stock",background="red", foreground="white")
         update_in_progress = False #unlock update
-        
+
     #Schedule next update in 2 seconds to keep UI responsive
     FetchDataAsync(UpdateUI) #async fetch with callback
     table.after(2000, lambda: UpdateTable(table)) #refresh every 2 seconds
@@ -67,9 +67,9 @@ def process_upc(entry, table, mode):
             entry.delete(0, tk.END) #Clear input field
 
             return
-        search_item = DatabaseLookup(ndc_code)
-        if search_item:
-            med_dict = MedFormatting(search_item, ndc_code)
+        search_items = DatabaseLookup(ndc_code)
+        if search_items:
+            med_dict = MedFormatting(search_items, ndc_code)
             if mode == "add":
                 AddMed(med_dict)
             elif mode == "remove":
@@ -103,20 +103,19 @@ def GUISetup():
     for i, col in enumerate(cols):
         table.heading(i, text=col)
         table.column(i, width=col_width, anchor="center", stretch=True)
-    table.pack()
+    table.pack(expand=True, fill="both")
 
     #UPC input field
     input_frame = tk.Frame(root)
     input_frame.pack(side='bottom', pady=10)
-
     tk.Label(input_frame, text="UPC Code:").pack(side=tk.LEFT)
     upc_entry = tk.Entry(input_frame)
     upc_entry.pack(side=tk.LEFT, padx=5)
 
+    #Add/Remove radio buttons
     mode_var = tk.StringVar(root, "add") #default to "Add"
     toggle_frame = tk.Frame(root)
     toggle_frame.pack(side = 'bottom', pady=10)
-
     add_button = tk.Radiobutton(toggle_frame, text="Add", variable=mode_var, value="add")
     remove_button = tk.Radiobutton(toggle_frame, text="Remove", variable=mode_var, value="remove")
     add_button.pack(side=tk.LEFT)
@@ -129,6 +128,10 @@ def GUISetup():
     # submit_button = tk.Button(input_frame, text="Add Medication", command=lambda: process_upc(upc_entry, table, mode_var.get()))
     upc_entry.bind("<Return>", lambda event: process_upc(upc_entry, table, mode_var.get()))
     upc_entry.bind("<KeyRelease>", on_entry_change)
+    #Most Recent Scanned Item\
+    scanned_frame = tk.Frame(input_frame)
+    scanned_frame.pack(side=tk.RIGHT, pady=10)
+    tk.Label(scanned_frame, text=f"Last entry: ").pack(side=tk.RIGHT)
     # submit_button.pack(side=tk.LEFT)
     upc_entry.focus_set()
 
