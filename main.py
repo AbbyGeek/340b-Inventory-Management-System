@@ -5,12 +5,10 @@ from db_display import FetchDataAsync, GUISetup
 """
 TODO: 
 -display most recent added/removed med under table
--Metformin 500mg and Metformin 1000mg are the only two medications so far that have been causing errors when scanning
--table should fill window
 -issues with buspirone 5mg
 -text box should always stay selected
 - Tell Yashita Redy to go fuck herself and that I've never been happier since getting kicked from her team.
-    I'm not a failure. I'm not a waste. I'm not the best programmer in the world, but I can figure this out.
+    I'm not a failure. I'm not a waste. I'm not the best programmer in the world, but I am capable of figuring this out, despite her best wishes.
 """
  
 def Main():

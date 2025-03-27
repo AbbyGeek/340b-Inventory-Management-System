@@ -5,6 +5,13 @@ from inventorydb import AddMed, OpenDb, RemoveMed, CloseDb
 from jsonquery import UpcToNdc, DatabaseLookup, MedFormatting
 import concurrent.futures
 
+"""
+~~~~~TO DO~~~~~
+- Display NDC, Generic name, Brand name, Dose, Package info. Add extras if space allows
+- How do we display the strength of items with multiple active ingredients?
+- Quantity value should be pulled from med_dict by Qty value, not index, to avoid errors when changing columns
+"""
+
 executor = concurrent.futures.ThreadPoolExecutor(max_workers=3) #Background worker thread
 update_in_progress = False #global flag
 
@@ -14,7 +21,7 @@ def FetchDataAsync(callback):
         import sqlite3
         conn = sqlite3.connect("inventory.db") #new connection to DB
         cursor = conn.cursor()
-        cursor.execute("SELECT ndc_code, generic_name, brand_name, manufacturer, package_info, dosage_form, route, pharm_class, quantity FROM medications")
+        cursor.execute("SELECT ndc_code, generic_name, brand_name, strength, manufacturer, package_info, dosage_form, route, pharm_class, quantity FROM medications")
         rows = cursor.fetchall()
         conn.close() #close after fetching
         return rows
@@ -32,7 +39,7 @@ def UpdateTable(table):
         existing_items = {table.item(child)["values"][0]: child for child in table.get_children()} # get existing rows by NDC code
         for row in rows:
             ndc_code = row[0]
-            quantity = row[8]
+            quantity = row[9]
             tag = "low_stock" if quantity < 4 else ""
             if ndc_code in existing_items:
                     #update row if exists
@@ -96,7 +103,7 @@ def GUISetup():
     frame = tk.Frame(root)
     frame.pack(pady=20, fill="both", expand=True)
 
-    cols = ["NDC Code", "Generic Name", "Brand Name", "Manufacturer", "Package Info", "Dosage Form", "Route", "Pharmacy Class", "Quantity"]
+    cols = ["NDC Code", "Generic Name", "Brand Name", "Strength", "Manufacturer", "Package Info", "Dosage Form", "Route", "Pharmacy Class", "Quantity"]
     table = ttk.Treeview(frame, columns=tuple(range(len(cols))), show="headings")
 
     col_width = screen_width // len(cols)

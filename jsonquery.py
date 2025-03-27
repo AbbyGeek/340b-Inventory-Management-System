@@ -4,13 +4,21 @@ loadfile = open('drug-ndc-0001-of-0001.json')
 dataset = json.load(loadfile)
 
 def MedFormatting(items, ndc_input):
-    best_match = None
+    # best_match = None
     package_dict = {}
     for item in items:
         generic_name = item.get('generic_name')
         brand_name = item.get('brand_name')
         manufacturer = item.get('labeler_name')
         dosage_form = item.get('dosage_form')
+        ingredient_list = item.get('active_ingredients')
+        ingredients = ""
+        strengths = ""
+        for ingredient_item in ingredient_list:
+            ingredient = ingredient_item.get('name')
+            strength = ingredient_item.get('strength')
+            ingredients += (f"{ingredient} ")
+            strengths += (f"{strength} ")
 
         package_list = []
         for package in item.get('packaging', []):
@@ -20,10 +28,10 @@ def MedFormatting(items, ndc_input):
             package_list.append((package_ndc, description))
         package_info = PackageLookup(package_list, ndc_input)
         # Prioritize items where the ndc_input directly matches a package_ndc
-        if package_info and ndc_input in package_info[0].replace("-",""):
-            best_match = item
+        # if package_info and ndc_input in package_info[0].replace("-",""):
+            # best_match = item
     # If no exact package match is found, use the first occurrence as fallback
-    selected_item = best_match if best_match else items[0]
+    # selected_item = best_match if best_match else items[0]
 
     route_list = ""
     for route in item.get('route'):
@@ -32,12 +40,14 @@ def MedFormatting(items, ndc_input):
     for pharm_class in item.get('pharm_class'):
         pharm_class_list += pharm_class
     med_dict = dict(
-        ndc_code=ndc_input,
+        ndc_code=package_info[0],
         generic_name = generic_name,
         brand_name = brand_name,
+        active_ingredients = "",
         manufacturer = manufacturer,
-        package_info = package_info,
+        package_info = package_info[1],
         dosage_form = dosage_form,
+        strength =  strengths,
         route = route_list,
         pharm_class = pharm_class_list,
         quantity = 1
@@ -67,4 +77,4 @@ def PackageLookup(package_list, ndc_input):
         for package in package_list:
             package_ndc = package[0]
             if ndc_input == package_ndc.replace("-",""):
-                return package[1]
+                return package
